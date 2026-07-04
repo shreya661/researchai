@@ -2,7 +2,7 @@
 
 Reserch.Ai is a full-stack multi-agent research assistant. It takes a research topic, searches the web, summarizes sources with Groq, cross-checks claims, and generates a citation-backed Markdown report that can be exported as a PDF.
 
-The app is built with FastAPI, LangGraph, Tavily, Groq, SQLite or PostgreSQL, and a Vite React dashboard.
+The app is built with FastAPI, LangGraph, Tavily, Groq, PostgreSQL (local or Neon/Vercel), and a Vite React dashboard.
 
 ## Features
 
@@ -21,7 +21,7 @@ flowchart LR
     Dashboard -->|POST /api/research/start| API[FastAPI Backend]
     Dashboard <-->|WebSocket progress| API
     Dashboard -->|GET status/history/pdf| API
-    API --> DB[(SQLite or PostgreSQL)]
+    API --> DB[(PostgreSQL)]
     API --> Graph[LangGraph Coordinator]
     Graph --> Search[Search Agent]
     Search --> Tavily[Tavily Search API]
@@ -124,7 +124,7 @@ capstone/
 | Agent orchestration | LangGraph |
 | LLM provider | Groq |
 | Web search | Tavily |
-| Database | SQLite by default, PostgreSQL supported |
+| Database | PostgreSQL (via asyncpg/psycopg2) |
 | PDF export | ReportLab |
 
 ## Prerequisites
@@ -179,20 +179,20 @@ Fill in your keys:
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 TAVILY_API_KEY=your_tavily_api_key_here
-DATABASE_URL=sqlite+aiosqlite:///./researchlab.db
+# Local PostgreSQL or Neon Cloud PostgreSQL URL
+DATABASE_URL=postgresql+asyncpg://postgres:admin123@localhost:5432/researchlab
 ```
 
 Start the backend:
 
 ```bash
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn main:app --reload --port 8000
 ```
 
-Useful backend links:
-
-- API root: http://127.0.0.1:8000
-- Health check: http://127.0.0.1:8000/health
-- Swagger docs: http://127.0.0.1:8000/docs
+> 💡 **Useful Backend Links:**
+> - **API Root URL:** [http://localhost:8000](http://localhost:8000)
+> - **Health Check:** [http://localhost:8000/health](http://localhost:8000/health)
+> - **Swagger API Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## Frontend Setup
 
@@ -201,25 +201,22 @@ Open a second terminal:
 ```bash
 cd frontend
 npm install
-npm run dev -- --host 127.0.0.1
+npm run dev
 ```
 
-Open the dashboard:
+> 🚀 **Open the Dashboard:**
+> Go to: **[http://localhost:5173](http://localhost:5173)** in your browser.
 
-```text
-http://127.0.0.1:5173
-```
-
-By default, the frontend calls:
+By default, the frontend calls the backend API at:
 
 ```text
 http://localhost:8000
 ```
 
-You can override that with a frontend `.env` file:
+You can override that by creating a frontend `.env` file (`frontend/.env`):
 
 ```env
-VITE_API_BASE=http://127.0.0.1:8000
+VITE_API_BASE=http://localhost:8000
 ```
 
 ## API Guide
@@ -290,7 +287,7 @@ npm run build
 Backend smoke check after starting Uvicorn:
 
 ```bash
-curl http://127.0.0.1:8000/health
+curl http://localhost:8000/health
 ```
 
 Expected response:
@@ -302,17 +299,15 @@ Expected response:
 ## Environment And Security Notes
 
 - Do not commit `backend/.env`.
-- Do not commit `backend/researchlab.db`; it contains local session history.
 - Rotate API keys if they were ever shared in chat, screenshots, or public commits.
 - Use `.env.example` to document required variables without exposing real secrets.
 
 ## Production Notes
 
-- Build the frontend with `npm run build`.
-- Serve `frontend/dist` with a static host such as Nginx, Netlify, or Vercel.
-- Run the backend with a production ASGI server configuration.
-- Replace local SQLite with PostgreSQL for multi-user or deployed environments.
-- Set explicit CORS origins for your production frontend domain.
+- Build the frontend with `npm run dev` or build it with `npm run build`.
+- Serve `frontend/dist` with a static host such as Netlify or Vercel.
+- Configure `DATABASE_URL` with a cloud PostgreSQL connection string (such as Neon PostgreSQL).
+- Set explicit CORS origins for your production frontend domain by adding the `FRONTEND_URL` environment variable to the backend.
 
 ## Author
 

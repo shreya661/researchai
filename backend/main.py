@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import os
 
 from db.database import init_db
 from api.research import router as research_router
@@ -26,7 +27,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-    ],
+    ] + [origin for origin in [os.environ.get("FRONTEND_URL", "")] if origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
