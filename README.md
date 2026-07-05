@@ -1,4 +1,4 @@
-# Reserch.Ai
+# ResearchLab.Ai
 
 Reserch.Ai is a full-stack multi-agent research assistant. It takes a research topic, searches the web, summarizes sources with Groq, cross-checks claims, and generates a citation-backed Markdown report that can be exported as a PDF.
 
