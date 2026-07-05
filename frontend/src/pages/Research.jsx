@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
 import AgentTracker from '../components/AgentTracker'
 import ReportViewer from '../components/ReportViewer'
@@ -10,19 +10,11 @@ export default function ResearchPage({ session, apiBase, onUpdate }) {
   const wsRef = useRef(null)
   const logStreamRef = useRef(null)
 
-  useEffect(() => {
-    loadSession()
-    connectWebSocket()
-    return () => wsRef.current?.close()
-  }, [session.session_id])
+  const addLog = useCallback((agent, message) => {
+    setLogs(prev => [...prev.slice(-50), { agent, message, time: new Date().toLocaleTimeString() }])
+  }, [])
 
-  useEffect(() => {
-    if (logStreamRef.current) {
-      logStreamRef.current.scrollTop = logStreamRef.current.scrollHeight
-    }
-  }, [logs])
-
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     try {
       const res = await axios.get(`${apiBase}/api/research/${session.session_id}/status`)
       setSessionData(res.data)
@@ -30,9 +22,9 @@ export default function ResearchPage({ session, apiBase, onUpdate }) {
     } catch (e) {
       console.error('Failed to load session', e)
     }
-  }
+  }, [apiBase, session.session_id, onUpdate])
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
     if (wsRef.current) wsRef.current.close()
     const wsUrl = apiBase ? apiBase.replace(/^http/, 'ws') : 'ws://localhost:8000'
     const ws = new WebSocket(`${wsUrl}/api/research/ws/${session.session_id}`)
@@ -52,11 +44,19 @@ export default function ResearchPage({ session, apiBase, onUpdate }) {
 
     ws.onerror = () => addLog('system', '⚠ WebSocket connection error')
     ws.onclose = () => addLog('system', '● Connection closed')
-  }
+  }, [apiBase, session.session_id, loadSession, addLog])
 
-  const addLog = (agent, message) => {
-    setLogs(prev => [...prev.slice(-50), { agent, message, time: new Date().toLocaleTimeString() }])
-  }
+  useEffect(() => {
+    loadSession()
+    connectWebSocket()
+    return () => wsRef.current?.close()
+  }, [session.session_id, loadSession, connectWebSocket])
+
+  useEffect(() => {
+    if (logStreamRef.current) {
+      logStreamRef.current.scrollTop = logStreamRef.current.scrollHeight
+    }
+  }, [logs])
 
   const handleDownloadPdf = () => {
     window.open(`${apiBase}/api/research/${session.session_id}/pdf`, '_blank')

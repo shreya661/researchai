@@ -4,21 +4,33 @@ function parseMarkdown(md) {
   const lines = md.split('\n')
   const elements = []
   let key = 0
+  let listItems = []
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      elements.push(<ul key={key++}>{listItems}</ul>)
+      listItems = []
+    }
+  }
 
   for (const line of lines) {
     const trimmed = line.trim()
-    if (!trimmed) {
-      elements.push(<br key={key++} />)
-    } else if (trimmed.startsWith('## ')) {
-      elements.push(<h2 key={key++}>{trimmed.slice(3)}</h2>)
-    } else if (trimmed.startsWith('### ')) {
-      elements.push(<h3 key={key++}>{trimmed.slice(4)}</h3>)
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      elements.push(<li key={key++} dangerouslySetInnerHTML={{ __html: inlineParse(trimmed.slice(2)) }} />)
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      listItems.push(<li key={key++} dangerouslySetInnerHTML={{ __html: inlineParse(trimmed.slice(2)) }} />)
     } else {
-      elements.push(<p key={key++} dangerouslySetInnerHTML={{ __html: inlineParse(trimmed) }} />)
+      flushList()
+      if (!trimmed) {
+        elements.push(<br key={key++} />)
+      } else if (trimmed.startsWith('## ')) {
+        elements.push(<h2 key={key++}>{trimmed.slice(3)}</h2>)
+      } else if (trimmed.startsWith('### ')) {
+        elements.push(<h3 key={key++}>{trimmed.slice(4)}</h3>)
+      } else {
+        elements.push(<p key={key++} dangerouslySetInnerHTML={{ __html: inlineParse(trimmed) }} />)
+      }
     }
   }
+  flushList()
   return elements
 }
 

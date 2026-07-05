@@ -4,9 +4,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, HRFlowable, ListFlowable, ListItem
+    SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 )
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.enums import TA_CENTER
 import re
 
 def markdown_to_pdf(topic: str, markdown_text: str, citations: list[dict]) -> bytes:

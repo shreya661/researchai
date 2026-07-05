@@ -1,7 +1,7 @@
 """
 Coordinator Agent — orchestrates the full multi-agent research pipeline using LangGraph.
 """
-from typing import TypedDict, Optional, Callable
+from typing import TypedDict, Optional
 # pyrefly: ignore [missing-import]
 from langgraph.graph import StateGraph, END
 
@@ -70,7 +70,7 @@ def should_continue(state: ResearchState) -> str:
 
 
 # ── Build the Graph ─────────────────────────────────────────────────────────
-def build_pipeline() -> StateGraph:
+def build_pipeline():
     graph = StateGraph(ResearchState)
 
     graph.add_node("search", search_node)
