@@ -15,7 +15,7 @@ The app is built with FastAPI, LangGraph, Tavily, Groq, PostgreSQL (local or Neo
 
 ## Architecture
 
-```mermaid
+```mermaid 
 flowchart LR
     User[User] --> Dashboard[React Dashboard] 
     Dashboard -->|POST /api/research/start| API[FastAPI Backend]
